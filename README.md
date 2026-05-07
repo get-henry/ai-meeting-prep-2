@@ -22,6 +22,8 @@ Input a prospect's name and company. Get back a structured brief covering:
 
 ## Demo
 
+![AI Meeting Prep Demo](demo.png)
+
 ```bash
 $ python prep.py "Sarah Chen" "Lattice" "VP of RevOps"
 
