@@ -1,22 +1,19 @@
 # AI Meeting Prep Agent
 
-> One command. Thirty seconds. Walk into every discovery call knowing exactly what to say.
+> AI agent that generates a full pre-call research brief in seconds — company snapshot, pain points, tailored questions, CRM context, and a suggested opening line.
 
-Built for Account Executives and founders who do their own selling — and don't have 45 minutes to research every prospect before a call.
+Built for Account Executives and founders who do their own selling — and don't have 45 minutes to prep for every call.
 
 ---
 
-## What It Does
+## How It Works
 
-Input a prospect's name and company. Get back a structured brief covering:
+1. Input a prospect's name, company, and optional role
+2. The agent synthesizes a structured research brief using Claude AI
+3. Brief streams live to your terminal and saves as a `.md` file
+4. Optional: paste your CRM notes via `--crm-notes` for a personalized brief
 
-- **Company snapshot** — what they do, size, stage, business model
-- **Recent signals** — funding, hires, product launches, layoffs in the last 6 months
-- **Likely tech stack** — CRM, automation tools, sales infrastructure
-- **Pain points to probe** — framed as questions to ask on the call
-- **Tailored talking points** — 3 value angles tied to their situation
-- **Red flags** — reasons this might be a hard sell
-- **Suggested call opener** — one specific sentence to start strong
+> **Note on Recent News:** The "Recent News & Signals" section is synthesized from AI training data, not live web search. For the freshest signals, re-run the brief closer to your call date.
 
 ---
 
@@ -25,25 +22,43 @@ Input a prospect's name and company. Get back a structured brief covering:
 ![AI Meeting Prep Demo](demo.png)
 
 ```bash
-$ python prep.py "Sarah Chen" "Lattice" "VP of RevOps"
+$ python prep.py "Jordan Kim" "Crestline Systems" "VP of RevOps"
 
-Researching Sarah Chen @ Lattice...
+Researching Jordan Kim @ Crestline Systems...
 
 ## Company Snapshot
-Lattice is a people management platform helping HR and people ops teams run
-performance reviews, engagement surveys, and career development programs...
+Crestline Systems is a B2B SaaS platform for mid-market ops teams —
+workflow automation, reporting, and performance tooling.
+· Model: B2B SaaS · ~$80M ARR · Series D
+· Size: ~500 employees, growth-to-profitability phase
 
 ## Recent News & Signals
-- Raised $175M Series F in 2021, now focused on profitability
-- Launched AI-powered performance summaries (Q4 2024)
-- Actively hiring RevOps roles (3 open JDs)...
+· Launched AI-powered workflow summaries (Q4 2024)
+· 3 open RevOps analyst JDs — actively scaling ops team
+· No new funding; focused on profitability post-Series D
+
+## CRM Context
+· No prior interactions on record
 
 ## Pain Points to Probe
-- "Are you running attribution manually across multiple systems?"
-- "How are you currently connecting CRM data to your comp planning?"...
+· "Are you connecting CRM data to comp planning automatically, or still manual?"
+· "How long does it take to produce your weekly revenue narrative?"
+· "With your AI push, are you worried about data quality feeding those models?"
+
+## Suggested Opening
+"Jordan — saw your post about CRM data quality. We work with RevOps leaders
+at Series C+ SaaS on exactly that. Worth 15 minutes?"
 
 ---
-Brief saved to: brief_lattice_sarah.md
+Brief saved to: brief_crestline_jordan.md  [generated in 4.2s]
+```
+
+---
+
+## Try the demo (no API key needed)
+
+```bash
+python demo.py
 ```
 
 ---
@@ -52,7 +67,13 @@ Brief saved to: brief_lattice_sarah.md
 
 ```bash
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your_key_here
+```
+
+Copy `.env.example` to `.env` and add your API key:
+
+```bash
+cp .env.example .env
+# then edit .env and set ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 ---
@@ -63,11 +84,30 @@ export ANTHROPIC_API_KEY=your_key_here
 # Basic
 python prep.py "Prospect Name" "Company"
 
-# With role for better targeting
-python prep.py "Marcus Webb" "Rippling" "Director of Sales"
+# With role for sharper targeting
+python prep.py "Jordan Kim" "Crestline Systems" "VP of RevOps"
+
+# With CRM context
+python prep.py "Jordan Kim" "Crestline Systems" "VP of RevOps" \
+  --crm-notes "Met at SaaStr 2024. Interested in pipeline analytics. Objection: already using Clari."
 ```
 
-Brief is streamed live to terminal and saved as a `.md` file.
+Brief streams live and saves as `brief_<company>_<firstname>.md`.
+
+---
+
+## Brief Sections
+
+| Section | What it covers |
+|---------|---------------|
+| Company Snapshot | What they do, size, stage, business model |
+| Recent News & Signals | Funding, hires, launches, layoffs |
+| Tech Stack (Likely) | CRM, marketing automation, sales tools |
+| CRM Context | Prior interactions, open opps, known objections |
+| Pain Points to Probe | 3 questions framed for the call |
+| Talking Points | 3 value angles tied to their situation |
+| Red Flags | Reasons this might be a hard sell |
+| Suggested Opening | One sentence to start the call strong |
 
 ---
 
@@ -80,6 +120,9 @@ Brief is streamed live to terminal and saved as a `.md` file.
 
 ## Why This Matters
 
-The average AE spends 20–30 minutes on pre-call research — most of it scattered across LinkedIn, Google News, and Crunchbase. This agent does it in under 30 seconds and surfaces only what matters for the conversation.
+The average AE spends 20–30 minutes on pre-call research scattered across LinkedIn, Google, and Crunchbase. This agent does it in under 30 seconds. For a 10-person sales team making 3 calls/day, that's 22+ hours of research time recovered every week.
 
-*Built by [Henry Tran](https://linkedin.com/in/get-henry) — AI automation for Revenue teams.*
+---
+
+Built by [Henry Tran](https://linkedin.com/in/gethenry) | [RevOps Marketing](https://revopsmarketing.net)
+Part of an open-source suite of AI agents for revenue teams.

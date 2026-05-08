@@ -5,8 +5,11 @@ Input a prospect's name + company. Get a research brief in seconds.
 """
 
 import anthropic
+import argparse
 import sys
 from datetime import date
+from dotenv import load_dotenv
+load_dotenv()
 
 
 SYSTEM_PROMPT = """You are an elite sales intelligence researcher.
@@ -14,8 +17,16 @@ Given a prospect's name and company, produce a concise, actionable meeting prep 
 Be specific, direct, and sales-oriented. Skip filler. Surface what an AE actually needs to walk in confident."""
 
 
-def build_prompt(name: str, company: str, role: str = "") -> str:
+def build_prompt(name: str, company: str, role: str = "", crm_notes: str = "") -> str:
     role_line = f"Role: {role}" if role else ""
+    crm_section = f"""
+## CRM Context
+{crm_notes}
+""" if crm_notes else """
+## CRM Context
+- No prior CRM data provided. Flag any prior interaction signals if known from public sources.
+"""
+
     return f"""Research this prospect and produce a meeting prep brief.
 
 Prospect: {name}
@@ -33,11 +44,12 @@ Return a structured brief with these sections:
 ## Recent News & Signals
 - Last 3-6 months: funding, product launches, exec hires, layoffs, earnings, press
 - What this signals about their priorities right now
+- Note: based on AI training data — re-run closer to call date for freshest signals
 
 ## Tech Stack (Likely)
 - CRM, marketing automation, sales tools they probably use
 - Based on company profile, job postings, and known integrations
-
+{crm_section}
 ## Pain Points to Probe
 - 3 specific challenges this type of company/buyer typically faces
 - Frame as questions: "Are you running into X?"
@@ -54,7 +66,7 @@ One sentence to open the call that references something specific about them.
 """
 
 
-def generate_brief(name: str, company: str, role: str = "") -> str:
+def generate_brief(name: str, company: str, role: str = "", crm_notes: str = "") -> str:
     client = anthropic.Anthropic()
 
     print(f"Researching {name} @ {company}...\n")
@@ -63,7 +75,7 @@ def generate_brief(name: str, company: str, role: str = "") -> str:
         model="claude-sonnet-4-6",
         max_tokens=1500,
         system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": build_prompt(name, company, role)}],
+        messages=[{"role": "user", "content": build_prompt(name, company, role, crm_notes)}],
     ) as stream:
         full_text = ""
         for text in stream.text_stream:
@@ -83,17 +95,15 @@ def save_brief(name: str, company: str, content: str) -> str:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: python prep.py \"Prospect Name\" \"Company Name\" [\"Title/Role\"]")
-        print('Example: python prep.py "Sarah Chen" "Lattice" "VP of RevOps"')
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="AI Meeting Prep Agent")
+    parser.add_argument("name", help='Prospect name, e.g. "Sarah Chen"')
+    parser.add_argument("company", help='Company name, e.g. "Acme Corp"')
+    parser.add_argument("role", nargs="?", default="", help='Optional role/title, e.g. "VP of RevOps"')
+    parser.add_argument("--crm-notes", default="", help='Paste CRM context: prior interactions, objections, open opps')
+    args = parser.parse_args()
 
-    name = sys.argv[1]
-    company = sys.argv[2]
-    role = sys.argv[3] if len(sys.argv) > 3 else ""
-
-    brief = generate_brief(name, company, role)
+    brief = generate_brief(args.name, args.company, args.role, args.crm_notes)
 
     print("\n\n---")
-    saved = save_brief(name, company, brief)
+    saved = save_brief(args.name, args.company, brief)
     print(f"Brief saved to: {saved}")
